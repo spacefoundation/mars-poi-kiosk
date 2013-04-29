@@ -5,6 +5,8 @@ Powered by Away3D (http://away3d.com), this full-screen points of interest (POI)
 
 The kiosk is designed for high resolution (1920x1080) single-touch touchscreens optimally powered by a high-performance PC, Mac or Linux computer.
 
+Created using Flash CS6 Professional, Adobe AIR 3.4 (for Desktop)
+
 IMPORTANT: This project is at an very early stage. Don't expect much at this point. :D
 
 
