@@ -1,6 +1,4 @@
 .DS_Store
-imgFULL/mars_diffuse.png
-
-imgFULL/mars_normal.png
-
+imgFULL/*
+skyboxSF/*
 mars.swf
