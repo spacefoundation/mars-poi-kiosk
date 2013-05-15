@@ -1,4 +1,4 @@
-package
+﻿package
 {
 	import away3d.arcane;
 	import away3d.cameras.*;
@@ -165,30 +165,16 @@ package
 		override protected function onUpdate():void {
 			var i:Number;
 			var projVec:Vector3D;
+			var projVecCam:Vector3D;
 			var camXDif:Number;
+			var distance:Number;
 			
 			//_mars.rotationY += 0.02; //temp
 			
-			//show/hide lines
-			//It's not right yet, markers won't line up for now...
-			
-			
-			var camAX:Number = (_cameraController.panAngle + 90) % 360;
-			if(camAX < 0) {
-				camAX = 360 + camAX;
-			}
-			
 			//position, show/hide markers
 			for(i=0; i<_poi.points.length; i++) {
-				super.onUpdate();
-				
-				projVec = _view.project(_poi.points[i].lineSeg.end);
-				_poi.points[i].targ.x = projVec.x;
-				_poi.points[i].targ.y = projVec.y;
-				
-				camXDif = Math.abs(camAX - _poi.points[i].x);
-				
-				if((camXDif > 70 && camXDif < 295 && _poi.points[i].x != 0) || Math.abs(_cameraController.tiltAngle - _poi.points[i].y) > 70) {
+				distance = Math.sqrt(Math.pow(_poi.points[i].lineSeg.end.x-_view.camera.x, 2)+Math.pow(_poi.points[i].lineSeg.end.y-_view.camera.y, 2)+Math.pow(_poi.points[i].lineSeg.end.z-_view.camera.z, 2));
+				if(distance > 300) {	
 					_poi.points[i].lineSeg.thickness = 0;
 					_poi.points[i].targ.visible = false;
 				} else {
@@ -196,9 +182,11 @@ package
 					_poi.points[i].targ.visible = true;
 				}
 				
+				//for 2D overlay
+				projVec = _view.project(_poi.points[i].lineSeg.end);
+				_poi.points[i].targ.x = projVec.x;
+				_poi.points[i].targ.y = projVec.y;
 			}
-			
-			
 			
 		}
 

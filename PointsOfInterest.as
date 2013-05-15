@@ -60,6 +60,10 @@ package  {
 				points[i].outerVector = getVec(points[i].x, points[i].y, 130);
 				points[i].lineSeg = new LineSegment(points[i].innerVector, points[i].outerVector, 0x33eeba99, 0x33FFFFFF, 0.001);
 				points[i].enabled = false;
+				
+				if(points[i].x < 0) {
+					points[i].x = 360 + points[i].x; //makes it easier to show/hide markers
+				}
 			}
 		}
 		
@@ -95,7 +99,7 @@ package  {
 			poi.title = "Hellas Planitia";
 			poi.tAlign = "R";
 			poi.type = "Region";
-			poi.x = 360 - 70;
+			poi.x = -70;
 			poi.y = -42.7;
 			points.push(poi);
 			
@@ -122,7 +126,7 @@ package  {
 			poi.title = "Isidis Planitia";
 			poi.tAlign = "L";
 			poi.type = "Region";
-			poi.x = 360 - 87;
+			poi.x = -87;
 			poi.y = 12.9;
 			points.push(poi);
 			
@@ -482,7 +486,7 @@ package  {
 			poi.title = "Albor Tholus";
 			poi.tAlign = "R";
 			poi.type = "Mountain";
-			poi.x = 360 - 150.4;
+			poi.x = -150.4;
 			poi.y = 18.8;
 			points.push(poi);
 			
@@ -500,7 +504,7 @@ package  {
 			poi.title = "Apollinaris Patera";
 			poi.tAlign = "R";
 			poi.type = "Mountain";
-			poi.x = 360 - 174.4;
+			poi.x = -174.4;
 			poi.y = -9.3;
 			points.push(poi);
 			
@@ -527,7 +531,7 @@ package  {
 			poi.title = "Elysium Mons";
 			poi.tAlign = "R";
 			poi.type = "Mountain";
-			poi.x = 360 - 146.9;
+			poi.x = -146.9;
 			poi.y = 24.8;
 			points.push(poi);
 			
@@ -536,7 +540,7 @@ package  {
 			poi.title = "Hecates Tholus";
 			poi.tAlign = "R";
 			poi.type = "Mountain";
-			poi.x = 360 - 150.2;
+			poi.x = -150.2;
 			poi.y = 32.1;
 			points.push(poi);
 			
@@ -603,7 +607,7 @@ package  {
 			poi.title = "Mars 2 Lander (USSR)";
 			poi.tAlign = "R";
 			poi.type = "Spacecraft";
-			poi.x = 360 - 47; //47E
+			poi.x = -47; //47E
 			poi.y = -45.0;
 			points.push(poi);
 			
@@ -639,7 +643,7 @@ package  {
 			poi.title = "Viking 2 Lander (USA)";
 			poi.tAlign = "R";
 			poi.type = "Spacecraft";
-			poi.x = 360 - 133.74;
+			poi.x = -133.74;
 			poi.y = 47.93;
 			points.push(poi);
 			
@@ -657,7 +661,7 @@ package  {
 			poi.title = "Mars Polar Lander (USA)";
 			poi.tAlign = "R";
 			poi.type = "Spacecraft";
-			poi.x = 360 - 164.7;
+			poi.x = -164.7;
 			poi.y = -76.7;
 			points.push(poi);
 			
@@ -666,7 +670,7 @@ package  {
 			poi.title = "MER Spirit Rover (USA)";
 			poi.tAlign = "R";
 			poi.type = "Spacecraft";
-			poi.x = 360 - 175.47;
+			poi.x = -175.47;
 			poi.y = -14.57;
 			points.push(poi);
 			
@@ -684,7 +688,7 @@ package  {
 			poi.title = "Beagle 2 Lander (UK)";
 			poi.tAlign = "R";
 			poi.type = "Spacecraft";
-			poi.x = 360 - 90;
+			poi.x = -90;
 			poi.y = 10.6;
 			points.push(poi);
 			
@@ -693,7 +697,7 @@ package  {
 			poi.title = "Curiosity Rover (USA)";
 			poi.tAlign = "R";
 			poi.type = "Spacecraft";
-			poi.x = 360 - 137.4;
+			poi.x = -137.4;
 			poi.y = -4.5;
 			points.push(poi);
 		}
