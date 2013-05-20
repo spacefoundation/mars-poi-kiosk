@@ -27,6 +27,8 @@ package  {
 	import flash.text.*;
 	import flash.ui.*;
 	
+	import Target;
+	
 	public class PointsOfInterest {
 
 		public var points:Array = [];
@@ -53,19 +55,41 @@ package  {
 			return new Vector3D(x,y,z);
 		}
 		
+		public function resetAlpha():void {
+			var i:Number;
+			for(i=0; i<points.length; i++) {
+				points[i].targ.alpha = .5;
+			}
+		}
+		
 		private function initPosAttrib():void {
 			var i:Number;
 			for(i=0; i<points.length; i++) {
 				points[i].innerVector = getVec(points[i].x, points[i].y, 115);
 				points[i].outerVector = getVec(points[i].x, points[i].y, 130);
 				points[i].lineSeg = new LineSegment(points[i].innerVector, points[i].outerVector, 0x33eeba99, 0x33FFFFFF, 0.001);
-				points[i].enabled = false;
+				points[i].enabled = true;
+				points[i].targ = new Target();
+				points[i].targ.alpha = .5;
+				points[i].targ.poiIndex = i;
+				points[i].targ.mouseEnabled = false;
+				points[i].targ.titleRight.mouseEnabled = false;
+				points[i].targ.titleLeft.mouseEnabled = false;
+				
+				
+				if(points[i].tAlign == "R") {
+					points[i].targ.titleRight.text = points[i].title;
+				} else {
+					points[i].targ.titleLeft.text = points[i].title;
+				}
 				
 				if(points[i].x < 0) {
 					points[i].x = 360 + points[i].x; //makes it easier to show/hide markers
 				}
+				
 			}
 		}
+		
 		
 		private function definePOI():void {
 			var poi:Object;
@@ -466,15 +490,6 @@ package  {
 			poi.type = "Crater";
 			poi.x = -117;
 			poi.y = -72.2;
-			points.push(poi);
-			
-			//source: http://www.google.com/mars/
-			poi = {};
-			poi.title = "Reynolds Crater";
-			poi.tAlign = "L";
-			poi.type = "Crater";
-			poi.x = -157.9;
-			poi.y = -75;
 			points.push(poi);
 			
 			/////////////////////////
