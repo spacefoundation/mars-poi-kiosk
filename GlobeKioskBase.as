@@ -22,11 +22,12 @@
 	import flash.geom.*;
 	import flash.text.*;
 	import flash.ui.*;
+	import flash.net.*;
 	
 	public class GlobeKioskBase extends GlobeBase {
 
 		private var _logos:Logos;
-		private var _touchOfMars:TouchOfMars;
+		public var _touchOfMars:TouchOfMars;
 		private var _scaleMult:Number = 1;
 		private var _optWidth:Number = 1920; //used to scale some graphics down if screen is smaller size
 		private var _ripple:Ripple;
@@ -35,12 +36,17 @@
 		public var _markersOnOff:MarkersOnOff;
 		public var _zoomInOut:ZoomInOut;
 		public var _mapSelect:MapSelect;
+		public var _infoPanel:InfoPanel;
 
 		public function GlobeKioskBase() {
 			super();
 			
-			_touchOfMars = new TouchOfMars();
-			addChild(_touchOfMars);
+			_infoPanel = new InfoPanel();
+			_infoPanel.mouseEnabled = false;
+			_infoPanel.mouseChildren = false;
+			_infoPanel.con.alpha = 0;
+			_infoPanel.con.cacheAsBitmap = true;
+			addChild(_infoPanel);
 			
 			_logos = new Logos();
 			addChild(_logos);
@@ -65,6 +71,9 @@
 			_ripple = new Ripple(stage);
 			addChild(_ripple);
 			
+			_touchOfMars = new TouchOfMars();
+			addChild(_touchOfMars);
+			
 			stage.addEventListener(Event.RESIZE, handleResize);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKey);
 			stage.addEventListener(Event.ENTER_FRAME, initMouseHide);
@@ -73,17 +82,89 @@
 			
 		}
 		
+		public function setInfoPanel(photoCredit:String, photoURI:String, infoTitle:String, infoContent:String) { //add photo URL?
+			var loader:Loader;
+			var urlReq:URLRequest;
+			
+			_infoPanel.con.alpha = 0;
+			
+			_infoPanel.con.photoCredit.text = photoCredit;
+			_infoPanel.con.infoTitle.text = infoTitle;
+			_infoPanel.con.infoContent.text = infoContent;
+			
+			if(photoURI == "") {
+				_infoPanel.con.photo.visible = false;
+				_infoPanel.con.photoCredit.visible = false;
+				posInfoPanelContent();
+			} else {
+				_infoPanel.con.photo.visible = true;
+				_infoPanel.con.photoCredit.visible = true;
+				loader = new Loader();
+				urlReq = new URLRequest(photoURI);
+				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onPhotoLoaded);
+				loader.load(urlReq);
+			}
+		}
+		
 		// ---------------------------------------------------------------------
 		// Private.
 		// ---------------------------------------------------------------------
+		
+		private function onPhotoLoaded(event:Event):void {
+			var image:Bitmap = event.target.content as Bitmap;
+			image.smoothing = true;
+			_infoPanel.con.photo.removeChildAt(0);
+			_infoPanel.con.photo.addChild(image);
+			posInfoPanelContent();
+		}
 		
 		private function goFullScreen():void {
 			stage.displayState = StageDisplayState.FULL_SCREEN;
 		}
 		
+		private function posInfoPanelContent():void {
+			var photoScaleMult:Number;
+			
+			photoScaleMult =  _touchOfMars.width / _infoPanel.con.photo.width;
+			
+			if(_infoPanel.con.photo.visible == true) {
+				_infoPanel.con.photo.width = _touchOfMars.width;
+				_infoPanel.con.photo.height = _infoPanel.con.photo.height * photoScaleMult;
+				_infoPanel.con.photo.x = 20;
+				_infoPanel.con.photo.y = _touchOfMars.y + _touchOfMars.height + 40;
+				_infoPanel.con.photoCredit.x = 20;
+				_infoPanel.con.photoCredit.y = _infoPanel.con.photo.y + _infoPanel.con.photo.height;
+				_infoPanel.con.photoCredit.autoSize = TextFieldAutoSize.LEFT;
+				_infoPanel.con.photoCredit.width = _touchOfMars.width;
+			}
+			
+			_infoPanel.con.infoTitle.x = 20;
+			if(_infoPanel.con.photo.visible == true) {
+				_infoPanel.con.infoTitle.y = _infoPanel.con.photoCredit.y + 30;
+			} else {
+				_infoPanel.con.infoTitle.y = _touchOfMars.y + _touchOfMars.height + 40;
+			}
+			_infoPanel.con.infoTitle.autoSize = TextFieldAutoSize.LEFT;
+			_infoPanel.con.infoTitle.width = _touchOfMars.width;
+			_infoPanel.con.infoContent.x = 20;
+			_infoPanel.con.infoContent.y = _infoPanel.con.infoTitle.y + 30;
+			_infoPanel.con.infoContent.autoSize = TextFieldAutoSize.LEFT;
+			_infoPanel.con.infoContent.width = _touchOfMars.width;
+			stage.removeEventListener(Event.ENTER_FRAME, fadeInInfoPanel);
+			stage.addEventListener(Event.ENTER_FRAME, fadeInInfoPanel);
+		}
+		
 		// ---------------------------------------------------------------------
 		// Event handlers.
 		// ---------------------------------------------------------------------
+		
+		private function fadeInInfoPanel(event:Event) {
+			_infoPanel.con.alpha += .05;
+			if(_infoPanel.con.alpha >= 1) {
+				_infoPanel.con.alpha = 1;
+				stage.addEventListener(Event.ENTER_FRAME, fadeInInfoPanel);
+			}
+		}
 		
 		private function handleResize(event:Event):void {
 			_scaleMult = stage.stageWidth / _optWidth;
@@ -91,6 +172,13 @@
 			_touchOfMars.scaleX = _touchOfMars.scaleY = _scaleMult;
 			_touchOfMars.x = 20;
 			_touchOfMars.y = 10;
+			
+			//_infoPanel.scaleX = _infoPanel.scaleY = _scaleMult;
+			_infoPanel.x = 0;
+			_infoPanel.y = 0;
+			_infoPanel.back.height = stage.stageHeight;
+			_infoPanel.back.width = _touchOfMars.x + _touchOfMars.width + 45;
+			posInfoPanelContent();
 			
 			_logos.scaleX = _logos.scaleY = _scaleMult;
 			_logos.x = stage.stageWidth - _logos.width - 20;
@@ -179,5 +267,7 @@
 		}
 
 	}
+	
+	
 	
 }

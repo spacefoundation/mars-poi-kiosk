@@ -191,12 +191,28 @@
 				_poi.points[i].targ.targHit.addEventListener(MouseEvent.CLICK, onTargSelected);
 				addChild(_poi.points[i].targ);
 			}
+			
+			//put the info panel back on top
+			addChild(_infoPanel);
+			addChild(_touchOfMars);
 		}
 		
 		private function onTargSelected(event:MouseEvent):void {
-			_poi.resetAlpha();
-			_debugText.debug.text = "Pan in a cool photo and info for:\n" + _poi.points[event.target.parent.poiIndex].title;
-			event.target.parent.alpha = 1;
+			var photoURI:String = "";
+			var photoCredit:String = "";
+			var description:String = "";
+			_poi.activateTarg(event.target.parent.poiIndex);
+			
+			if("photoURI" in _poi.points[event.target.parent.poiIndex]) {
+				photoURI = _poi.points[event.target.parent.poiIndex].photoURI;
+				photoCredit = _poi.points[event.target.parent.poiIndex].photoCredit;
+			}
+			
+			if("description" in _poi.points[event.target.parent.poiIndex]) {
+				description = _poi.points[event.target.parent.poiIndex].description
+			}
+			
+			setInfoPanel(photoCredit, photoURI, _poi.points[event.target.parent.poiIndex].title, description);
 		}
 		
 		private function modulateDiffuseMethod(vo : MethodVO, t:ShaderRegisterElement, regCache:ShaderRegisterCache, sharedRegisters:ShaderRegisterData):String
