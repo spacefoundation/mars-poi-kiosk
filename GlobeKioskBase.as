@@ -113,7 +113,13 @@
 		private function onPhotoLoaded(event:Event):void {
 			var image:Bitmap = event.target.content as Bitmap;
 			image.smoothing = true;
-			_infoPanel.con.photo.removeChildAt(0);
+			
+			while (_infoPanel.con.imageBorder.numChildren > 0) {
+				_infoPanel.con.imageBorder.removeChildAt(0);
+			}
+			while (_infoPanel.con.photo.numChildren > 0) {
+				_infoPanel.con.photo.removeChildAt(0);
+			}
 			_infoPanel.con.photo.addChild(image);
 			posInfoPanelContent();
 		}
@@ -136,6 +142,23 @@
 				_infoPanel.con.photoCredit.y = _infoPanel.con.photo.y + _infoPanel.con.photo.height;
 				_infoPanel.con.photoCredit.autoSize = TextFieldAutoSize.LEFT;
 				_infoPanel.con.photoCredit.width = _touchOfMars.width;
+				
+				//image mask
+				var imageMask:Shape = new Shape();
+				imageMask.graphics.beginFill(0x0);
+				imageMask.graphics.drawRoundRect(0, 0, _infoPanel.con.photo.width, _infoPanel.con.photo.height, 12, 12);
+				imageMask.graphics.endFill();
+				imageMask.x = _infoPanel.con.photo.x;
+				imageMask.y = _infoPanel.con.photo.y;
+				_infoPanel.con.photo.mask = imageMask;
+				
+				//image border
+				var imageBorder:Shape = new Shape();
+				imageBorder.graphics.lineStyle(2, 0xffffff, 1, true);
+				imageBorder.graphics.drawRoundRect(0, 0, _infoPanel.con.photo.width, _infoPanel.con.photo.height, 12, 12);
+				imageBorder.x = _infoPanel.con.photo.x;
+				imageBorder.y = _infoPanel.con.photo.y;
+				_infoPanel.con.imageBorder.addChild(imageBorder);
 			}
 			
 			_infoPanel.con.infoTitle.x = 20;
