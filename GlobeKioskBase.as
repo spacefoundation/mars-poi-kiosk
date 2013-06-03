@@ -46,6 +46,7 @@
 			_infoPanel.mouseChildren = false;
 			_infoPanel.con.alpha = 0;
 			_infoPanel.con.cacheAsBitmap = true;
+			_infoPanel.con.photo.visible = false;
 			addChild(_infoPanel);
 			
 			_logos = new Logos();
