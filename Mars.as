@@ -123,6 +123,40 @@
 			createSky();
 			createMars("photo");
 			plotPOI();
+			goIdle();
+		}
+		
+		private function goIdle():void {
+			var i:Number;
+			_idleMode = true;
+			hideControls();
+			_infoPanel.con.alpha = 0;
+			_infoPanel.back.alpha = 0;
+			_infoPanel.con.photo.visible = false;
+			_infoPanel.con.photoCredit.text = "";
+			_infoPanel.con.infoTitle.text = "";
+			_infoPanel.con.infoContent.text = "";
+			if(_poiEnabled == true) {
+				toggleMarkers();
+				for(i=0; i<_poi.points.length; i++) {
+					_poi.points[i].lineSeg.thickness = 0;
+					_poi.points[i].targ.visible = false;
+				}
+			}
+			_cameraController.tiltAngle = 0;
+			_cameraController.distance = 260;
+			_touchToStart.visible = true;
+			_mapSelect.gotoAndStop('photo');
+			setMapTexture('photo');
+		}
+		
+		private function goActive():void {
+			_idleMode = false;
+			showControls();
+			toggleMarkers();
+			_touchToStart.visible = false;
+			_infoPanel.back.alpha = 0;
+			_idleInt = 0;
 		}
 		
 		private function createLight():void {
@@ -249,27 +283,30 @@
 			var camXDif:Number;
 			var distance:Number;
 			
-			/*
-			if( > 1800) {
-				//_mars.rotationY += 0.02; //temp
-			}
-			*/
-			
-			//position, show/hide markers
-			for(i=0; i<_poi.points.length; i++) {
-				distance = Math.sqrt(Math.pow(_poi.points[i].lineSeg.end.x-_view.camera.x, 2)+Math.pow(_poi.points[i].lineSeg.end.y-_view.camera.y, 2)+Math.pow(_poi.points[i].lineSeg.end.z-_view.camera.z, 2));
-				if(distance > _cameraController.distance || _poi.points[i].enabled == false) {	
-					_poi.points[i].lineSeg.thickness = 0;
-					_poi.points[i].targ.visible = false;
-				} else {
-					_poi.points[i].lineSeg.thickness = 1;
-					_poi.points[i].targ.visible = true;
+			if(_idleMode == true) {
+				_cameraController.panAngle += 0.03;
+			} else {
+				//position, show/hide markers
+				for(i=0; i<_poi.points.length; i++) {
+					distance = Math.sqrt(Math.pow(_poi.points[i].lineSeg.end.x-_view.camera.x, 2)+Math.pow(_poi.points[i].lineSeg.end.y-_view.camera.y, 2)+Math.pow(_poi.points[i].lineSeg.end.z-_view.camera.z, 2));
+					if(distance > _cameraController.distance || _poi.points[i].enabled == false) {	
+						_poi.points[i].lineSeg.thickness = 0;
+						_poi.points[i].targ.visible = false;
+					} else {
+						_poi.points[i].lineSeg.thickness = 1;
+						_poi.points[i].targ.visible = true;
+					}
+					
+					//for 2D overlay
+					projVec = _view.project(_poi.points[i].lineSeg.end);
+					_poi.points[i].targ.x = projVec.x;
+					_poi.points[i].targ.y = projVec.y;
 				}
 				
-				//for 2D overlay
-				projVec = _view.project(_poi.points[i].lineSeg.end);
-				_poi.points[i].targ.x = projVec.x;
-				_poi.points[i].targ.y = projVec.y;
+				_idleInt++;
+				if(_idleInt >= 10800) { //roughly 3 mins
+					goIdle();
+				}
 			}
 			
 		}
@@ -302,6 +339,10 @@
 		override protected function onSelectMapMola():void {
 			_mapSelect.gotoAndStop('mola');
 			setMapTexture('mola');
+		}
+		
+		override protected function onIdleModePress():void {
+			goActive();
 		}
 	}
 }

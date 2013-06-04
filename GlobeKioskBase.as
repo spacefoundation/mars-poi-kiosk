@@ -37,6 +37,9 @@
 		public var _zoomInOut:ZoomInOut;
 		public var _mapSelect:MapSelect;
 		public var _infoPanel:InfoPanel;
+		public var _touchToStart:TouchToStart;
+		public var _idleMode:Boolean = false;
+		public var _idleInt:int = 0;
 
 		public function GlobeKioskBase() {
 			super();
@@ -45,8 +48,13 @@
 			_infoPanel.mouseEnabled = false;
 			_infoPanel.mouseChildren = false;
 			_infoPanel.con.alpha = 0;
+			_infoPanel.back.alpha = 0;
 			_infoPanel.con.cacheAsBitmap = true;
+			_infoPanel.back.cacheAsBitmap = true;
 			_infoPanel.con.photo.visible = false;
+			_infoPanel.con.photoCredit.text = "";
+			_infoPanel.con.infoTitle.text = "";
+			_infoPanel.con.infoContent.text = "";
 			addChild(_infoPanel);
 			
 			_logos = new Logos();
@@ -75,6 +83,10 @@
 			_touchOfMars = new TouchOfMars();
 			addChild(_touchOfMars);
 			
+			_touchToStart = new TouchToStart();
+			_touchToStart.visible = false;
+			addChild(_touchToStart);
+			
 			stage.addEventListener(Event.RESIZE, handleResize);
 			stage.addEventListener(KeyboardEvent.KEY_DOWN, handleKey);
 			stage.addEventListener(Event.ENTER_FRAME, initMouseHide);
@@ -88,6 +100,7 @@
 			var urlReq:URLRequest;
 			
 			_infoPanel.con.alpha = 0;
+			_infoPanel.back.alpha = 0;
 			
 			_infoPanel.con.photoCredit.text = photoCredit;
 			_infoPanel.con.infoTitle.text = infoTitle;
@@ -105,6 +118,26 @@
 				loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onPhotoLoaded);
 				loader.load(urlReq);
 			}
+		}
+		
+		//used when starting idle mode
+		public function hideControls():void {
+			_infoPanel.visible = false;
+			_logos.visible = false;
+			_markersOnOff.visible = false;
+			_zoomInOut.visible = false;
+			_mapSelect.visible = false;
+			_touchOfMars.visible = false;
+		}
+		
+		//when ending idle mode
+		public function showControls():void {
+			_infoPanel.visible = true;
+			_logos.visible = true;
+			_markersOnOff.visible = true;
+			_zoomInOut.visible = true;
+			_mapSelect.visible = true;
+			_touchOfMars.visible = true;
 		}
 		
 		// ---------------------------------------------------------------------
@@ -183,10 +216,15 @@
 		// ---------------------------------------------------------------------
 		
 		private function fadeInInfoPanel(event:Event) {
-			_infoPanel.con.alpha += .05;
-			if(_infoPanel.con.alpha >= 1) {
-				_infoPanel.con.alpha = 1;
-				stage.addEventListener(Event.ENTER_FRAME, fadeInInfoPanel);
+			if(_infoPanel.con.contentTitle == "") {
+				stage.removeEventListener(Event.ENTER_FRAME, fadeInInfoPanel);
+			} else {
+				_infoPanel.con.alpha += .05;
+				_infoPanel.back.alpha += .05;
+				if(_infoPanel.con.alpha >= 1) {
+					_infoPanel.con.alpha = 1;
+					stage.removeEventListener(Event.ENTER_FRAME, fadeInInfoPanel);
+				}
 			}
 		}
 		
@@ -220,6 +258,10 @@
 			_mapSelect.x = stage.stageWidth / 2;
 			_mapSelect.y = stage.stageHeight;
 			
+			_touchToStart.scaleX = _touchToStart.scaleY = _scaleMult;
+			_touchToStart.x = stage.stageWidth / 2;
+			_touchToStart.y = stage.stageHeight / 2;
+			
 			_debugText.x = 20;
 			_debugText.y = stage.stageHeight - _debugText.height - 20;
 			
@@ -243,30 +285,36 @@
 		private function initMouseHide(event:Event):void {
 			if(_view != null) {
 				stage.removeEventListener(Event.ENTER_FRAME, initMouseHide);
-				//Mouse.hide(); //uncomment when finished developing...
+				Mouse.hide(); //uncomment when finished developing...
 			}
 		}
 		
 		private function buttonPressCheck(event:MouseEvent):void {
-			//markers on/off (erg.. _markersOnOff MOUSE_DOWN issues in this scope, revisit for better solution)
-			if(stage.mouseX >= _markersOnOff.x && stage.mouseX <= (_markersOnOff.x + _markersOnOff.width) && stage.mouseY >= _markersOnOff.y && stage.mouseY <= (_markersOnOff.y + _markersOnOff.height)) {
-				onMarkersOnOff();
-			} 
-			//zoom in
-			else if(stage.mouseX >= (stage.stageWidth/2) - (_zoomInOut.width/2) && stage.mouseX <= (stage.stageWidth/2) && stage.mouseY <= _zoomInOut.height) {
-				onZoomIn();
-			} 
-			//zoom out
-			else if(stage.mouseX >= (stage.stageWidth/2) && stage.mouseX <= (stage.stageWidth/2) + (_zoomInOut.width/2) && stage.mouseY <= _zoomInOut.height)  {
-				onZoomOut();
-			}
-			//select photo map
-			else if(stage.mouseX >= (stage.stageWidth/2) - (_mapSelect.width/2) && stage.mouseX <= (stage.stageWidth/2) && stage.mouseY >= _mapSelect.y - _mapSelect.height) {
-				onSelectMapPhoto();
-			}
-			//select mola map
-			else if(stage.mouseX >= (stage.stageWidth/2) && stage.mouseX <= (stage.stageWidth/2) + (_mapSelect.width/2) && stage.mouseY >= _mapSelect.y - _mapSelect.height)  {
-				onSelectMapMola();
+			_idleInt = 0;
+			
+			if(_idleMode == true) {
+				onIdleModePress();
+			} else {
+				//markers on/off (erg.. _markersOnOff MOUSE_DOWN issues in this scope, revisit for better solution)
+				if(stage.mouseX >= _markersOnOff.x && stage.mouseX <= (_markersOnOff.x + _markersOnOff.width) && stage.mouseY >= _markersOnOff.y && stage.mouseY <= (_markersOnOff.y + _markersOnOff.height)) {
+					onMarkersOnOff();
+				} 
+				//zoom in
+				else if(stage.mouseX >= (stage.stageWidth/2) - (_zoomInOut.width/2) && stage.mouseX <= (stage.stageWidth/2) && stage.mouseY <= _zoomInOut.height) {
+					onZoomIn();
+				} 
+				//zoom out
+				else if(stage.mouseX >= (stage.stageWidth/2) && stage.mouseX <= (stage.stageWidth/2) + (_zoomInOut.width/2) && stage.mouseY <= _zoomInOut.height)  {
+					onZoomOut();
+				}
+				//select photo map
+				else if(stage.mouseX >= (stage.stageWidth/2) - (_mapSelect.width/2) && stage.mouseX <= (stage.stageWidth/2) && stage.mouseY >= _mapSelect.y - _mapSelect.height) {
+					onSelectMapPhoto();
+				}
+				//select mola map
+				else if(stage.mouseX >= (stage.stageWidth/2) && stage.mouseX <= (stage.stageWidth/2) + (_mapSelect.width/2) && stage.mouseY >= _mapSelect.y - _mapSelect.height)  {
+					onSelectMapMola();
+				}
 			}
 		}
 		
@@ -287,6 +335,10 @@
 		}
 		
 		protected function onSelectMapMola():void {
+			// Override me.
+		}
+		
+		protected function onIdleModePress():void {
 			// Override me.
 		}
 
